@@ -19,10 +19,11 @@ class Matriz{
   int get_f() ; 
   int get_c() ;
   int get_dim() ;
-  vector<T> get_mt() ;
+  vector<T> get_mt() const ;
   Matriz(const Matriz &);
   T & operator()(int, int);
   T operator()(int, int) const;
+  Matriz & operator = (const Matriz<T> &); 
 };
 
 #endif
@@ -58,6 +59,7 @@ Matriz<T>::Matriz(int a,int b,vector<T> A){
   
 }
 
+
 //Destructor
 template <class T>
 Matriz<T>::~Matriz(){
@@ -85,9 +87,10 @@ int Matriz<T>::get_dim(){
 
 //Retorna el vector asociado a la matriz
 template <class T>
-vector<T> Matriz<T>::get_mt(){
+vector<T> Matriz<T>::get_mt() const {
   return mt;  
 }
+//Asigna un vector como los elements de una matriz
 template <class T>
 void Matriz<T>::set_matriz(vector<T> A){
   mt=A; 
@@ -109,11 +112,13 @@ T Matriz<T>::operator() (int i, int j) const
 
 //Contructor de copia
 template <class T>
-Matriz<T>::Matriz(const Matriz & A){
+Matriz<T>::Matriz(const Matriz<T> & A){
   f=A.f;
   c=A.c;
-  mt= A.mt;
+  vector<T> v_copia = A.get_mt();
+  mt= v_copia;
 }
+
 
 
 
@@ -135,6 +140,17 @@ ostream & operator << (ostream & os ,Matriz<T> M){
   }
   return os;
 }
+
+//--------------------------Operador asignacion------------------------------
+
+template <class T>
+Matriz<T> &Matriz<T>::operator = (const Matriz<T> & M){
+  vector<T> v_copia=M.get_mt();  
+  mt= v_copia;
+  return *this; 
+}
+
+
 
 
 

@@ -19,6 +19,7 @@ class Matriz{
   int get_f() ; 
   int get_c() ;
   int get_dim() ;
+  T traza(); 
   vector<T> get_mt() const ;
   Matriz(const Matriz &);
   T & operator()(int, int);
@@ -77,6 +78,20 @@ int Matriz<T>::get_c(){
   return c; 
 }
 
+//Retorna la traza de una matriz cuadrada. 
+template <class T>
+T Matriz<T>::traza(){
+  T suma=0;
+  if (c==f){
+    for(int i=0; i<c; ++i){
+      suma+=mt[i+(c*i)]; 
+    }
+    return suma;
+  }
+  else{
+    cout<< " la matriz no tiene traza "<<endl;
+  };
+}
 
 //Retorna el numero de elementos de la matriz
 template <class T>
@@ -198,13 +213,13 @@ Matriz<T> operator - (Matriz<T> X, Matriz<T> Y){
 //---------------------------Operador multiplicacion por escalar---------------
 template <class T>
 Matriz<T> operator * (T x, Matriz<T> Y){
-  double escalar = x; 
+  T escalar = x;
   vector<T> v_mul;
   int fila=Y.get_f();
   int col=Y.get_c();
   for (int i=0;i<fila;++i){
       for (int j=0;j<col;++j){
-	v_mul.push_back(x*Y(i,j)); 
+	v_mul.push_back(escalar*Y(i,j)); 
       } 
     } 
   Matriz<T> C(Y.get_f(),Y.get_c(),v_mul);

@@ -30,7 +30,9 @@ class Matriz{
   Matriz<T> inter_fila(int, int); //intercambia las filas.
   Matriz<T> multiplicar_fila(T, int); // multiplica por un numero de tipo T la fila int selecionada.
   Matriz<T> suma_fila(int, int, T x); //le suma a la fila f2, el resultado de x*f1.
-  Matriz<T> ordenar(); //
+  //Matriz<T> ordenar(); //
+  Matriz<T> triangular();
+  vector<T> resolver_sistema();
 };
 
 
@@ -186,12 +188,12 @@ Matriz<T> Matriz<T>::suma_fila(int f2, int f1, T x){
   vector<T> copia_mt=mt; 
   Matriz<T> M(f,c,copia_mt);
   for(int j=0; j<c ; ++j){
-    mt[f2*c+j]= M(f2,j)+x*M(f1,j); 
+    mt[f2*c+j]= M(f2,j)-x*M(f1,j); 
   };
   return *this; 
 }
 
-template <class T>
+/*template <class T>
 Matriz<T> Matriz<T>::ordenar(){
   vector<T> copia_mt=mt;
   Matriz<T> M(f,c,copia_mt);
@@ -202,13 +204,58 @@ Matriz<T> Matriz<T>::ordenar(){
   }
   mt=M.get_mt();
   return *this; 
+  }*/
+
+template <class T>
+Matriz<T> Matriz<T>::triangular(){
+  Matriz<double> M(f,c,mt);
+  for(int i=0; i<(f-1); ++i){
+    T escalar= T(1.0)/M(i,i);
+    //cout<< escalar<<endl; 
+    M.multiplicar_fila(escalar, i);
+    int contador=f-i;
+    int num = i; 
+    while(num<contador){
+      double factor = M(num+1, i);
+      //cout<<factor<<endl; 
+      M.suma_fila(num+1, i, factor);       
+      ++num; 
+    }
+  };
+  mt=M.get_mt();  
+  return *this;
+} 
+
+template <class T>
+vector<T> Matriz<T>::resolver_sistema(){
+  vector<double> vec_sol;
+  Matriz<double> M(f,c,mt);
+  M.triangular();
+  for(int i=(f-1); i>0; --i){
+    T escalar= T(1.0)/M(i,i);
+    //cout<< escalar<<endl; 
+    M.multiplicar_fila(escalar, i);
+    int contador=i+1;
+    //cout <<contador<<endl; 
+    int num = i; 
+    while(f-num-1<contador){
+      double factor = M(num-1,i); 
+      M.suma_fila(num-1, i, factor);       
+      --num; 
+    }
+  };
+  for(int i=0; i<f; ++i){
+    vec_sol.push_back(M(i,c-1));
+  }
+  return vec_sol; 
 }
 
 
-
-
-
-
+/*
+a00 a01 a02 a03
+  0 a11 a12 a13
+  0   0 a22 a23
+*/
 /*##############################################################################
 ########################### Sobrecarga de operadores ###########################
 ###############################################################################*/

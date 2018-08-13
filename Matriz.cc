@@ -6,15 +6,15 @@
 using namespace std;
 
 int main(){
-  vector<double> v1 = {0,2,3,4,1,1};
+  vector<double> v1 = {2,2,3,4,1,1,1,1,1};
   vector<double> v2 = {2,8,3,1,1,1};
-  vector<double> v3 = {2,1,-1,-8,-3,-1,2,11,-2,1,2,3};
+  vector<double> v3 = {2,1,-1,8,-3,-1,2,-11,-2,1,2,-3};
   //vector<double> v3 = {1,2,3,4,5,6,7,8,9};
   /*complex<double> w1 = {1,2};
   complex<double> w2 = {1,2};
   complex<double> w3 = {1,2};  complex<double> w4 = {1,2};*/
   
-  Matriz<double> M(2,3,v1);
+  Matriz<double> M(3,3,v1);
   Matriz<double> G(3,4);
   //Matriz<double> C(3,3,v3);
   /*Matriz<complex<double>> M(2,2);
@@ -43,11 +43,13 @@ int main(){
   cout << "El resultado de la operacion 2.0*M*G es:"<<endl; 
   cout << 2*M*G <<endl;
   */
-  G.multiplicar_fila(1./G(0,0),0);
-  G.suma_fila(1,0,3.0);
-  G.suma_fila(2,0,2.0);
-  G.multiplicar_fila(1./G(1,1),1);
-  G.suma_fila(2,1,-2.0);
-  cout << M.ordenar()<<endl; 
+  //G.multiplicar_fila(1./G(0,0),0);
+  //G.suma_fila(1,0,3.0);
+  //G.suma_fila(2,0,2.0);
+  //G.multiplicar_fila(1./G(1,1),1);
+  //G.suma_fila(2,1,-2.0);
+  //cout <<G.triangular()<<endl;
+  cout<<G.resolver_sistema()[0]<<endl;
+  //cout<<G<<endl; 
   return 0;
 } 

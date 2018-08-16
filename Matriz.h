@@ -262,7 +262,7 @@ vector<T > Matriz<T>::resolver_sistema_gauss_jordan(Matriz<T> N){
 
 
 //####################GAUSS-JORDAN###############################################################3
-//Esta matriz entrega el vector que resuelve el sistema de ecuaciones por método de gauss_jordan. Se le debe pasar por argumento la matriz que tiene las soluciones.  
+//Esta matriz entrega el vector que resuelve el sistema de ecuaciones por método de gauss. Se le debe pasar por argumento la matriz que tiene las soluciones.  
 template <class T>
 vector<T > Matriz<T>::resolver_sistema_gauss(Matriz<T> N){
   vector<T> vec_Matriz=(*this).eliminacion_gauss(N)[0];
@@ -284,13 +284,6 @@ vector<T > Matriz<T>::resolver_sistema_gauss(Matriz<T> N){
   }
   return vec_Matriz; 
 }
-
-
-
-
-
-
-
 
 
 //##########################################INVERSA###############################################3

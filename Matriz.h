@@ -30,9 +30,13 @@ class Matriz{
   Matriz<T> inter_fila(int, int); //intercambia las filas.
   Matriz<T> multiplicar_fila(T, int); // multiplica por un numero de tipo T la fila int selecionada.
   Matriz<T> suma_fila(int, int, T x); //le suma a la fila f2, el resultado de x*f1.
-  //Matriz<T> ordenar(); //
-  Matriz<T> triangular();
-  vector<T> resolver_sistema();
+  vector<vector<T> > eliminacion_gauss(Matriz<T> );
+  vector<T> resolver_sistema_gauss_jordan(Matriz<T>);
+  vector<T> resolver_sistema_gauss(Matriz<T>);
+  Matriz<T> inversa();
+  T determinante();
+  
+  
 };
 
 
@@ -95,7 +99,7 @@ T Matriz<T>::traza(){
     return suma;
   }
   else{
-    cout<< " la matriz no tiene traza "<<endl;
+    throw "la matriz no tiene traza ";
   };
 }
 
@@ -167,11 +171,13 @@ Matriz<T> Matriz<T>::inter_fila(int f1, int f2){
   vector<T> copia_mt=mt; 
   Matriz<T> M(f,c,copia_mt);
   for(int j=0; j<c ; ++j ){
-    mt[f1*c+j]=T(-1)*M(f2,j);
-    mt[f2*c+j]=T(-1)*M(f1,j); 
+    mt[f1*c+j]=T(1)*M(f2,j);
+    mt[f2*c+j]=T(1)*M(f1,j); 
   };
   return *this;  
 }
+
+
 //multiplica por un numero de tipo T una fila f seleccionada. 
 template <class T>
 Matriz<T> Matriz<T>::multiplicar_fila(T x, int f1){
@@ -183,79 +189,142 @@ Matriz<T> Matriz<T>::multiplicar_fila(T x, int f1){
   return *this; 
 }
 
+//suma la fila f2 el resultado de x*f1. 
 template <class T>
 Matriz<T> Matriz<T>::suma_fila(int f2, int f1, T x){
   vector<T> copia_mt=mt; 
   Matriz<T> M(f,c,copia_mt);
   for(int j=0; j<c ; ++j){
-    mt[f2*c+j]= M(f2,j)-x*M(f1,j); 
+    mt[f2*c+j]= M(f2,j)+x*M(f1,j); 
   };
-  return *this; 
-}
-
-/*template <class T>
-Matriz<T> Matriz<T>::ordenar(){
-  vector<T> copia_mt=mt;
-  Matriz<T> M(f,c,copia_mt);
-  for(int i=0; i<c; ++i){
-    if(M(i,0)==0){
-      M.inter_fila(i,(i+1));
-    }
-  }
-  mt=M.get_mt();
-  return *this; 
-  }*/
-
-template <class T>
-Matriz<T> Matriz<T>::triangular(){
-  Matriz<double> M(f,c,mt);
-  for(int i=0; i<(f-1); ++i){
-    T escalar= T(1.0)/M(i,i);
-    //cout<< escalar<<endl; 
-    M.multiplicar_fila(escalar, i);
-    int contador=f-i;
-    int num = i; 
-    while(num<contador){
-      double factor = M(num+1, i);
-      //cout<<factor<<endl; 
-      M.suma_fila(num+1, i, factor);       
-      ++num; 
-    }
-  };
-  mt=M.get_mt();  
   return *this;
-} 
+}
 
+//#################################################TRIANGULAR SUPERIOR####################################################333
+//Por medio del eliminación de gauss el algoritmo logra hacer un matriz triangular superior, guarda en un vector de vector la matriz *this, N, como tercer argumento los elementos para de la diagonal no reducida para así calcular el determinante.  
 template <class T>
-vector<T> Matriz<T>::resolver_sistema(){
-  vector<double> vec_sol;
-  Matriz<double> M(f,c,mt);
-  M.triangular();
-  for(int i=(f-1); i>0; --i){
-    T escalar= T(1.0)/M(i,i);
-    //cout<< escalar<<endl; 
-    M.multiplicar_fila(escalar, i);
-    int contador=i+1;
-    //cout <<contador<<endl; 
-    int num = i; 
-    while(f-num-1<contador){
-      double factor = M(num-1,i); 
-      M.suma_fila(num-1, i, factor);       
-      --num; 
+vector<vector<T> > Matriz<T>::eliminacion_gauss(Matriz<T> N){
+  vector<vector<T> > vec_final; 
+  Matriz<T> M(f,c,mt);
+  vector<T> f_determinante;
+  int iteraciones=0;
+  for(int j=0; j<f; ++j){
+    for(int k=j; k<f-1; ++k){
+      for(int i=j; i<f-1; ++i){
+	if(M(i,j)<=M(i+1,j)){
+	  M.inter_fila(i,i+1);
+	  N.inter_fila(i,i+1);
+	  ++iteraciones; 
+	}
+      }
     }
-  };
-  for(int i=0; i<f; ++i){
-    vec_sol.push_back(M(i,c-1));
+    T escalar= T(1)/M(j,j);
+    f_determinante.push_back(M(j,j));
+    M.multiplicar_fila(escalar, j);
+    N.multiplicar_fila(escalar, j);
+    for(int i=j; i<f-1; ++i){
+      T factor =M(i+1,j); 
+      M.suma_fila(i+1, j, -factor);
+      N.suma_fila(i+1, j, -factor);
+    } 
   }
-  return vec_sol; 
+  //Se corregi los valores de la digonal triangular superior para que cuando se calcule el determinante este quede con el signo correcto. 
+  if((iteraciones%2)==0){
+    f_determinante[0]*=T(1);
+  }
+  else{
+    f_determinante[0]*=T(-1); 
+    }
+  vec_final.push_back(M.get_mt());
+  vec_final.push_back(N.get_mt());
+  vec_final.push_back(f_determinante);
+  return vec_final;
+}
+
+//####################GAUSS-JORDAN###############################################################3
+//Esta matriz entrega el vector que resuelve el sistema de ecuaciones por método de gauss_jordan. Se le debe pasar por argumento la matriz que tiene las soluciones.  
+template <class T>
+vector<T > Matriz<T>::resolver_sistema_gauss_jordan(Matriz<T> N){
+  vector<T> vec_Matriz=(*this).eliminacion_gauss(N)[0];
+  vector<T> vec_soluciones=(*this).eliminacion_gauss(N)[1];
+  Matriz<T> M(f,c,vec_Matriz);
+  Matriz<T> M_sol(N.get_f(),N.get_c(),vec_soluciones);
+  for(int j=f-1; j>0; --j){
+    for(int i=j; i>0; --i){  
+      T factor =M(i-1,j); 
+      M.suma_fila(i-1,j, -factor);
+      M_sol.suma_fila(i-1,j, -factor);
+    }
+  }
+  return M_sol.get_mt(); 
 }
 
 
-/*
-a00 a01 a02 a03
-  0 a11 a12 a13
-  0   0 a22 a23
-*/
+
+//####################GAUSS-JORDAN###############################################################3
+//Esta matriz entrega el vector que resuelve el sistema de ecuaciones por método de gauss_jordan. Se le debe pasar por argumento la matriz que tiene las soluciones.  
+template <class T>
+vector<T > Matriz<T>::resolver_sistema_gauss(Matriz<T> N){
+  vector<T> vec_Matriz=(*this).eliminacion_gauss(N)[0];
+  vector<T> vec_sol=(*this).eliminacion_gauss(N)[1];
+  vector<T> soluciones;
+  int pos= vec_sol.size(); 
+  for(int i=0; i<vec_sol.size();++i ){
+    soluciones.push_back(T(0));    
+  }
+  soluciones[pos-1]=vec_sol[pos-1];
+  Matriz<T> M(f,c,vec_Matriz);
+  for(int i=(f-1); i>0;--i){
+    T valor=T(0);
+    for(int j=0; j<c; ++j){
+      valor += M(i,j)*soluciones[i];
+      cout<<M(i-1,j)<<endl; 
+    }
+    soluciones[i-1]=valor-vec_sol[i-1];
+  }
+  return vec_Matriz; 
+}
+
+
+
+
+
+
+
+
+
+//##########################################INVERSA###############################################3
+//Función que calcula la matriz inversa de la matriz. Se le pasa una función y se le acopla la matriz identidad. 
+template <class T>
+Matriz<T> Matriz<T>::inversa(){
+  vector<T> vec_identidad; 
+  for(int i=0; i<(*this).get_dim();++i){
+    vec_identidad.push_back(T(0));
+  }
+  for(int i=0; i<(*this).get_f();++i){
+    vec_identidad[i*c+i]=T(1);
+  }
+  Matriz<T> M(f,c,mt);
+  Matriz<T> I(f,c,vec_identidad);
+  vector<T> vec_inversa=M.resolver_sistema(I);
+  Matriz<T> M_inv(f,c,vec_inversa);
+  return M_inv; 
+}
+
+//##############DETERMINANTE #####################################################################. 
+template <class T>
+T Matriz<T>::determinante(){
+  //Esta escrito así por la sintaxis de la funcion. 
+  vector<T> Det=(*this).eliminacion_gauss(*this)[2];
+  T det=1; 
+  for(int i=0; i<f; ++i){
+    det=det*Det[i];
+  }
+  return det; 
+}
+
+
+
 /*##############################################################################
 ########################### Sobrecarga de operadores ###########################
 ###############################################################################*/
@@ -279,7 +348,9 @@ ostream & operator << (ostream & os ,Matriz<T> M){
 
 template <class T>
 Matriz<T> &Matriz<T>::operator = (const Matriz<T> & M){
-  vector<T> v_copia=M.get_mt();  
+  vector<T> v_copia=M.get_mt();
+  //f=M.get_f();
+  //c=M.get_c(); 
   mt= v_copia;
   return *this; 
 }
@@ -339,8 +410,6 @@ Matriz<T> operator - (Matriz<T> X, Matriz<T> Y){
   }
 }
 
-
-
 //----------------------------Operador multiplicacion---------------------------
 template <class T>
 Matriz<T> operator * (Matriz<T> X, Matriz<T> Y){
@@ -360,6 +429,11 @@ Matriz<T> operator * (Matriz<T> X, Matriz<T> Y){
 	v_mul.push_back(suma); 
       }
     }
+    for(int i=0; i<v_mul.size(); ++i){
+      if(v_mul[i]<=T(0.000000000000001)){
+	v_mul[i]=T(0);
+      }
+    }
     Matriz<T> C(fila_x,col_y,v_mul);
     return C;
   }
@@ -369,5 +443,13 @@ Matriz<T> operator * (Matriz<T> X, Matriz<T> Y){
   }
 }
 
+// OPerador cout para vectores. 
+template <class T>
+ostream & operator << (ostream & os ,vector<T> v){
+  for (int i=0;i<v.size();++i){
+    os << v[i]<<",";
+  }
+  return os;
+}
 
 
